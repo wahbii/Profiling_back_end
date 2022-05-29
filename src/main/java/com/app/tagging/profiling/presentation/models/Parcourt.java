@@ -22,7 +22,12 @@ public class Parcourt  implements  Comparable{
     private  String code_parcout;
 
 
-    @OneToMany(mappedBy = "parcourt",cascade = {CascadeType.ALL})
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Application application;
+
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "parcourt",cascade = {CascadeType.PERSIST,CascadeType.DETACH,CascadeType.MERGE})
     private Set<EventDescription> eventDescriptionList=new HashSet<>();
 
 
