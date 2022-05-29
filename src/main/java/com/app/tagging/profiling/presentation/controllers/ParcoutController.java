@@ -6,6 +6,7 @@ import com.app.tagging.profiling.presentation.models.Application;
 import com.app.tagging.profiling.presentation.models.EventDescription;
 import com.app.tagging.profiling.presentation.models.Parcourt;
 import com.app.tagging.profiling.service.services.events.ParcoutService;
+import com.app.tagging.profiling.utils.Exceptions.NotAuthorized;
 import com.app.tagging.profiling.utils.Exceptions.ParcoursExisteExeption;
 import com.app.tagging.profiling.utils.JwtToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,27 +40,41 @@ public class ParcoutController {
     }
 
     @PostMapping(path = "/parcout")
-    public ResponseEntity<Parcourt> addParcourt( @RequestHeader("Authorization") String token,@RequestBody  Parcourt parcourt) throws ParcoursExisteExeption {
+    public ResponseEntity<Parcourt> addParcourt( @RequestHeader("Authorization") String token,@RequestBody  Parcourt parcourt) throws ParcoursExisteExeption, NotAuthorized {
 
         System.out.print("authorisation : "+token);
         System.out.print("data : "+ JwtToken.verifyToken(token));
-        Long id_application=Long.parseLong(JwtToken.verifyToken(token));
-        Application application=applicationDao.findById(id_application).get();
-        if(application!=null){
-            for (Parcourt elm:application.getParcourts()){
-                if (elm.compareTo(parcourt)==1){
-                    throw new ParcoursExisteExeption("this parcout already exist");
+        if(token!=null&&!token.isEmpty()){
 
+            try {
+                Long id_application=Long.parseLong(JwtToken.verifyToken(token));
+                Application application=applicationDao.findById(id_application).get();
+                if(application!=null){
+                    for (Parcourt elm:application.getParcourts()){
+                        if (elm.compareTo(parcourt)==1){
+                            throw new ParcoursExisteExeption("this parcout already exist");
+
+                        }
+                    }
+                    parcourt.setApplication(application);
+                    application.getParcourts().add(parcourt);
+                    Parcourt parcourt1=parcoutService.addPart(parcourt);
+                    return new ResponseEntity<>(parcourt1,HttpStatus.OK);
+
+                }else {
+                    throw new NotAuthorized("UnAuthorized");
                 }
+            }catch (Exception exception){
+                throw new NotAuthorized("UnAuthorized");
+
             }
-            parcourt.setApplication(application);
-            application.getParcourts().add(parcourt);
-            Parcourt parcourt1=parcoutService.addPart(parcourt);
-            return new ResponseEntity<>(parcourt1,HttpStatus.OK);
+
 
         }else {
-            throw new ParcoursExisteExeption("UnAuthorized");
+            throw new NotAuthorized("UnAuthorized");
         }
+
+
 
     }
 

@@ -28,6 +28,5 @@ public class EventToSend {
 
     @JsonIgnore
     @ManyToOne(cascade = {CascadeType.DETACH,CascadeType.MERGE,CascadeType.PERSIST})
-    @JoinColumn(name = "eventDecription")
     private  EventDescription eventDescription;
 }

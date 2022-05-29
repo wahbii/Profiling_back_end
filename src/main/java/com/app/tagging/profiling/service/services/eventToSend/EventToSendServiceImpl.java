@@ -3,6 +3,7 @@ package com.app.tagging.profiling.service.services.eventToSend;
 import com.app.tagging.profiling.dao.EventDao;
 import com.app.tagging.profiling.dao.EventToSendRepository;
 import com.app.tagging.profiling.dao.ParcoutDao;
+import com.app.tagging.profiling.presentation.models.Application;
 import com.app.tagging.profiling.presentation.models.EventDescription;
 import com.app.tagging.profiling.presentation.models.EventToSend;
 import com.app.tagging.profiling.presentation.models.Parcourt;
@@ -28,9 +29,10 @@ public class EventToSendServiceImpl  implements  EventToSendService{
 
 
     @Override
-    public EventDescription sendEvent(long id, EventToSend eventToSend) {
+    public EventDescription sendEvent(long id, EventToSend eventToSend, Application application) {
         EventDescription  eventDescription=eventdescDeo.findById(id).get();
-        if(eventDescription!=null){
+
+        if(eventDescription!=null&& application.getParcourts().contains(eventDescription.getParcourt())){
           eventDescription.getEventToSends().add(eventToSend);
           eventToSend.setEventDescription(eventDescription);
            eventToSend.setCode_event(eventDescription.getCode());
