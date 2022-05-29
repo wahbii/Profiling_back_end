@@ -1,5 +1,6 @@
 package com.app.tagging.profiling.service.services.events;
 
+import com.app.tagging.profiling.dao.EventDao;
 import com.app.tagging.profiling.dao.ParcoutDao;
 import com.app.tagging.profiling.presentation.models.EventDescription;
 import com.app.tagging.profiling.presentation.models.Parcourt;
@@ -15,6 +16,9 @@ public class ParcoutServiceImpl implements  ParcoutService{
     @Autowired
     private ParcoutDao parcoutDao;
 
+    @Autowired
+    private EventDao eventDao;
+
 
     @Override
     public List<Parcourt> getEvents() {
@@ -23,16 +27,29 @@ public class ParcoutServiceImpl implements  ParcoutService{
 
     @Override
     public Parcourt addPart(Parcourt parcourt) {
-        return parcoutDao.save(parcourt);
+         Boolean isIn=parcoutDao.findAll().contains(parcourt);
+         if(isIn){
+             return  null;
+         }else {
+             return parcoutDao.save(parcourt);
+         }
+
+
     }
 
     @Override
     public EventDescription addEventDescrition(Long parcourt, EventDescription eventDescription) {
 
-        Parcourt parcourt1=parcoutDao.getById(parcourt);
-        if(parcourt!=null){
-            parcourt1.getEventDescriptionList().add(eventDescription);
-            parcoutDao.save(parcourt1);
+        System.out.print("request id : "+parcourt);
+        Parcourt parcourt1=parcoutDao.findById(parcourt).get();
+        if(parcourt1!=null){
+            for(EventDescription elm :parcourt1.getEventDescriptionList()){
+                if(elm.compareTo(eventDescription)==1){
+                    return  null;
+                }
+            }
+            eventDescription.setParcourt(parcourt1);
+            eventDao.save(eventDescription);
             return  eventDescription;
         }
         else {
